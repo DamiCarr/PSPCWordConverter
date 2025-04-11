@@ -28,7 +28,6 @@ $(document).ready(()=>{
         const whitespaceRegex = [
             /\s+/g, // Replace multiple whitespace characters with a single space
             /^\s+|\s+$/g, // Remove whitespace from the beginning and end of the string
-            /<sup>\s*er\s*<\/sup>/g // Remove whitespace from <sup>er</sup>
         ];
 
         // Apply the regular expressions

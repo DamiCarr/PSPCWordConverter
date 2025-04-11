@@ -54,7 +54,9 @@ $(document).ready(() => {
             "<h2>",
             "</h2>",
             ">",
-            ""
+            "",
+            " <strong>", // Add space before <strong>
+            "</strong> " // Add space after </strong>
         ];
 
         // Apply regex transformations

@@ -7,13 +7,16 @@ $(document).ready(() => {
     }).fail(() => {
         console.log("An error has occurred.");
     });
-});
 
-(function() {
     document.getElementById("document")
         .addEventListener("change", handleFileSelect, false);
 
     function handleFileSelect(event) {
+        if (!json_data) {
+            console.error("JSON data is not loaded yet. Please try again.");
+            return;
+        }
+
         readFileInputEventAsArrayBuffer(event, function(arrayBuffer) {
             mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
                 .then(displayResult)
@@ -114,16 +117,12 @@ $(document).ready(() => {
         });
 
         // Applying acronyms
-        if (json_data) { // Ensure json_data is loaded before using it
-            $.each(json_data, function(i, e) {
-                let tag = JSON.stringify(e.tag);
-                let accronym = RegExp(e.accronym, "g");
-                tag = tag.slice(1, -1).replaceAll("'", '"');
-                output = output.replaceAll(accronym, tag);
-            });
-        } else {
-            console.error("json_data is not loaded.");
-        }
+        $.each(json_data, function(i, e) {
+            let tag = JSON.stringify(e.tag);
+            let accronym = RegExp(e.accronym, "g");
+            tag = tag.slice(1, -1).replaceAll("'", '"');
+            output = output.replaceAll(accronym, tag);
+        });
 
         /*----------------------------------------------------------------*/
         document.getElementById("output").innerHTML = output;
@@ -149,7 +148,7 @@ $(document).ready(() => {
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
     }
-})();
+});
 
 $('#copy-txt')[0].onclick = () => {
     navigator.clipboard.writeText($('#html-data')[0].value);

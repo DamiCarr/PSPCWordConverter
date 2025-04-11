@@ -21,8 +21,21 @@ $(document).ready(()=>{
         });
     }
     
-function displayResult(result) {
-let output = result.value;
+
+    function displayResult(result) {
+            let output = result.value;
+        
+            // Regular expressions to remove whitespace
+            const whitespaceRegex = [
+                /\s+/g, // Replace multiple whitespace characters with a single space
+                /^\s+|\s+$/g // Remove whitespace from the beginning and end of the string
+            ];
+        
+            // Apply the regular expressions
+            whitespaceRegex.forEach(regex => {
+                output = output.replace(regex, ' ').trim();
+            });
+        
 /*----------------------------------------------------------------*/
 rgxArray = [
     /.+?(?=<h1>)/g,//remove all above the h1

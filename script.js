@@ -1,7 +1,9 @@
 $(document).ready(() => {
+    // Declare json_data in a higher scope
+    let json_data = null;
+
     $.getJSON("json/abbr.json", (data) => {
-        // Declare json_data properly
-        let json_data = data;
+        json_data = data; // Assign data to json_data
     }).fail(() => {
         console.log("An error has occurred.");
     });
@@ -112,12 +114,16 @@ $(document).ready(() => {
         });
 
         // Applying acronyms
-        $.each(json_data, function(i, e) {
-            let tag = JSON.stringify(e.tag);
-            let accronym = RegExp(e.accronym, "g");
-            tag = tag.slice(1, -1).replaceAll("'", '"');
-            output = output.replaceAll(accronym, tag);
-        });
+        if (json_data) { // Ensure json_data is loaded before using it
+            $.each(json_data, function(i, e) {
+                let tag = JSON.stringify(e.tag);
+                let accronym = RegExp(e.accronym, "g");
+                tag = tag.slice(1, -1).replaceAll("'", '"');
+                output = output.replaceAll(accronym, tag);
+            });
+        } else {
+            console.error("json_data is not loaded.");
+        }
 
         /*----------------------------------------------------------------*/
         document.getElementById("output").innerHTML = output;

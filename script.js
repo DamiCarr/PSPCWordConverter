@@ -47,7 +47,8 @@ $(document).ready(() => {
             /(<h2> )/g,
             /(\W<\/h2>)/g,
             /(>)\n+(?=\w)/gm,
-            /<em> <\/em>/g
+            /<em> <\/em>/g,
+            /<p>\s*<strong>/g // Match <p> followed by spaces and <strong>
         ];
 
         const rgxReplaceArray = [
@@ -63,7 +64,8 @@ $(document).ready(() => {
             "<h2>",
             "</h2>",
             ">",
-            ""
+            "",
+            "<p><strong>" // Replace with <p><strong> without spaces
         ];
 
         // Applying the arrays above

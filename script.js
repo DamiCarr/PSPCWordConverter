@@ -122,7 +122,7 @@ $(document).ready(() => {
             alert("copied text to clipboard");
         };
     })();
-}
+},
 
 function readFileInputEventAsArrayBuffer(event, callback) {
     var file = event.target.files[0];
@@ -134,7 +134,7 @@ function readFileInputEventAsArrayBuffer(event, callback) {
     };
 
     reader.readAsArrayBuffer(file);
-}
+},
 
 function escapeHtml(value) {
     return value

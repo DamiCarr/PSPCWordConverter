@@ -149,6 +149,45 @@
   {
     "accronym": "(?<!(\\w))FCD(?!(\\w))",
     "tag": "<abbr title='First Change Date'>FCD</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))TBS(?!(\\w))",
+    "tag": "<abbr title='Treasury Board Secretariat'>TBS</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))PIPSC(?!(\\w))",
+    "tag": "<abbr title='Professional Institute of the Public Service of Canada'>PIPSC</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))CFO(?!(\\w))",
+    "tag": "<abbr title='Chief Financial Officer'>CFO</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))OT(?!(\\w))",
+    "tag": "<abbr title='Overtime'>OT</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))CT(?!(\\w))",
+    "tag": "<abbr title='Collective Agreement'>CT</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))EX(?!(\\w))",
+    "tag": "<abbr title='Executive Group'>EX</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))PA(?!(\\w))",
+    "tag": "<abbr title='Program and Administrative Services Group'>PA</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))CS(?!(\\w))",
+    "tag": "<abbr title='Computer Systems Group'>CS</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))AS(?!(\\w))",
+    "tag": "<abbr title='Administrative Services Group'>AS</abbr>"
+  },
+  {
+    "accronym": "(?<!(\\w))FI(?!(\\w))",
+    "tag": "<abbr title='Financial Management Group'>FI</abbr>"
   }
-
 ]

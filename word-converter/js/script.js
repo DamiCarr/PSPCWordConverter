@@ -163,7 +163,7 @@ document.getElementById("document").addEventListener("change", async (event) => 
                     return image.read("base64").then((imageBuffer) => {
                         const imageName = `image-${Date.now()}.png`;
                         saveImage(imageBuffer, imageName); // Save the image
-                        return { src: `images/${imageName}` }; // Reference the image in HTML
+                        return { src: `${imageName}` }; // Reference the image in HTML
                     });
                 }),
             }

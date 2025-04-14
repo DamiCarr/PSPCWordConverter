@@ -34,7 +34,7 @@ function handleFileSelect(event) {
                     return image.read("base64").then((imageBuffer) => {
                         const imageName = `image-${Date.now()}.png`;
                         saveImage(imageBuffer, imageName); // Save the image
-                        return { src: `images/${imageName}` }; // Reference the image in HTML
+                        return { src: `${base64String}` }; // Reference the image in HTML
                     });
                 }),
             }
@@ -157,7 +157,7 @@ function downloadHtml() {
 // Save the image (Base64 to file)
 function saveImage(base64Data, imageName) {
     const link = document.createElement("a");
-    link.href = `${base64Data}`;
+    link.href = `data:image/png;base64,${base64Data}`;
     link.download = imageName;
     link.click();
 }

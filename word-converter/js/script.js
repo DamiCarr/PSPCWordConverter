@@ -12,6 +12,7 @@ $(document).ready(() => {
     if (documentInput) {
         documentInput.addEventListener("change", (event) => {
             documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
+            resetState(); // Reset the state for a new file
             handleFileSelect(event);
             setTimeout(() => {
                 documentInput.disabled = false; // Re-enable after processing
@@ -24,7 +25,23 @@ $(document).ready(() => {
 
     // Add event listener to copy HTML content to clipboard
     $('#copy-txt').on("click", copyToClipboard);
+
+    // Add event listener for the image download button
+    document.getElementById("download-images").addEventListener("click", downloadImages);
 });
+
+// Reset the state for a new file
+function resetState() {
+    // Clear the HTML data textarea
+    document.getElementById("html-data").value = "";
+
+    // Clear the preview section
+    document.getElementById("output").innerHTML = "";
+
+    // Clear the image download queue
+    imageDownloadQueue.length = 0;
+    updateImageDownloadButton();
+}
 
 // Handle file selection and convert the file to HTML using Mammoth.js
 function handleFileSelect(event) {
@@ -42,9 +59,11 @@ function handleFileSelect(event) {
                 convertImage: mammoth.images.imgElement((image) => {
                     return image.read("base64").then((imageBuffer) => {
                         const imageName = `image-${Date.now()}.png`;
-                        saveImage(imageBuffer, imageName); // Save the image locally
 
-                        // Return both the saved image reference and the base64-encoded image
+                        // Store image data for manual download
+                        addImageToDownloadQueue(imageBuffer, imageName);
+
+                        // Reference the image in HTML without downloading
                         return {
                             src: `images/${imageName}`, // Reference the saved image in HTML
                             data: "data:" + image.contentType + ";base64," + imageBuffer // Base64-encoded image
@@ -79,6 +98,37 @@ function handleFileSelect(event) {
     };
 
     reader.readAsArrayBuffer(file);
+}
+
+// Queue to store images for manual download
+const imageDownloadQueue = [];
+
+// Add image to the download queue
+function addImageToDownloadQueue(base64Data, imageName) {
+    imageDownloadQueue.push({ base64Data, imageName });
+    updateImageDownloadButton();
+}
+
+// Update the image download button visibility
+function updateImageDownloadButton() {
+    const downloadButton = document.getElementById("download-images");
+    if (imageDownloadQueue.length > 0) {
+        downloadButton.style.display = "block";
+    } else {
+        downloadButton.style.display = "none";
+    }
+}
+
+// Download all queued images
+function downloadImages() {
+    imageDownloadQueue.forEach(({ base64Data, imageName }) => {
+        const link = document.createElement("a");
+        link.href = `data:image/png;base64,${base64Data}`;
+        link.download = imageName;
+        link.click();
+    });
+    imageDownloadQueue.length = 0; // Clear the queue after downloading
+    updateImageDownloadButton();
 }
 
 // Process and clean up the converted HTML content

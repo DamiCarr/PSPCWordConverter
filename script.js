@@ -38,9 +38,9 @@ $(document).ready(() => {
             /(\W<\/h2>)/g,
             /(>)\n+(?=\w)/gm,
             /<em> <\/em>/g,
-            /(?<=<)\s+|\s+(?=>)/g,
-            /\s+/g,
-            /<p><strong>/g
+            /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
+            /\s+/g, // Remove all whitespace characters
+            /<p><strong>/g // Match <p><strong> without space
         ];
         
         const rgxReplaceArray = [
@@ -59,8 +59,8 @@ $(document).ready(() => {
             "",
             "",
             "", // Replace all whitespace with nothing
-            "/<p> <strong>"
-        ];
+            "<p> <strong>" // Add a space between <p> and <strong>
+        ];        
 
         rgxArray.forEach((regex, i) => {
             if (i === 3 || i === 9) {

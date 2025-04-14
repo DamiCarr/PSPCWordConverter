@@ -41,7 +41,7 @@ $(document).ready(() => {
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
             /\s<strong>/g, // Match <p><strong> with space
             /\s<sup>/g, // Match <sup> with space
-            /\s<a>/g, // Match <a> with space
+            /\s<a>/g // Match <a> with space
         ];
         
         const rgxReplaceArray = [

@@ -46,8 +46,8 @@ function handleFileSelect(event) {
 
                         // Return both the saved image reference and the base64-encoded image
                         return {
-                            src: `images/${imageName}`, // Reference the saved image in HTML
-                            data: "data:" + image.contentType + ";base64," + imageBuffer // Base64-encoded image
+                            data: `images/${imageName}`, // Reference the saved image in HTML
+                            src: "data:" + image.contentType + ";base64," + imageBuffer // Base64-encoded image
                         };
                     });
                 }),

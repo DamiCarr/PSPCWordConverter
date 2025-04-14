@@ -40,7 +40,8 @@ $(document).ready(() => {
             /<em> <\/em>/g,
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
             /\s<strong>/g, // Match <p><strong> with space
-            /\s<sup>/g // Match 1<sup> with space
+            /\s<sup>/g, // Match 1<sup> with space
+            /\s<a>/g, // Match <a> with space
         ];
         
         const rgxReplaceArray = [
@@ -59,7 +60,8 @@ $(document).ready(() => {
             "",
             "",
             "<strong>", // remove a space between <p> and <strong>
-            "<sup>" // remove a space between 1 and <sup>
+            "<sup>", // remove a space between 1 and <sup>
+            "<a>"
         ];     
 
         rgxArray.forEach((regex, i) => {

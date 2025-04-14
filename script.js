@@ -41,7 +41,7 @@ $(document).ready(() => {
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
             /\s<strong>/g, // Match <p><strong> with space
             /\s<sup>/g, // Match <sup> with space
-            /\s<a>/g, // Match <a> with space
+            /\s(?=<a(.*?)\n*?)>/g, // Match <a> with space
             /<p>\s/g, // Match <p> with space
         ];
         
@@ -62,7 +62,7 @@ $(document).ready(() => {
             "", // Remove whitespace at the beginning and end of tags
             "<strong>", // Remove a space between <p> and <strong>
             "<sup>", // Remove a space in front of <sup>
-            "<a>", // Remove a space in front of <a>
+            "", // Remove a space in front of <a>
             "<p>", // Remove a space in front of <p>
         ];   
 

@@ -57,8 +57,6 @@ $(document).ready(() => {
             "</h2>",
             ">",
             "",
-            "",
-            "", // Replace all whitespace with nothing
             "<p> <strong>" // Add a space between <p> and <strong>
         ];        
 

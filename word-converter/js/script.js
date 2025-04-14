@@ -34,9 +34,12 @@ function handleFileSelect(event) {
                     return image.read("base64").then((imageBuffer) => {
                         const imageName = `image-${Date.now()}.png`;
                         saveImage(imageBuffer, imageName); // Save the image
-                        return {
-                            src: "data:" + image.contentType + ";base64," + imageBuffer
-                        }; // Reference the image in HTML
+                        convertImage: mammoth.images.imgElement(function(image) {
+                            return image.read("base64").then(function(imageBuffer) {
+                                return {
+                                    src: "data:" + image.contentType + ";base64," + imageBuffer
+                                };
+                        // Reference the image in HTML
                     });
                 }),
             }

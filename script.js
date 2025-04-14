@@ -39,7 +39,7 @@ $(document).ready(() => {
             /(>)\n+(?=\w)/gm,
             /<em> <\/em>/g,
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
-            /\s+/g, // Remove all whitespace characters
+            /(?<=\S)\s{2,}(?=\S)/g, // Replace multiple spaces between words with a single space
             /<p><strong>/g // Match <p><strong> without space
         ];
         
@@ -57,8 +57,10 @@ $(document).ready(() => {
             "</h2>",
             ">",
             "",
+            "",
+            " ", // Replace multiple spaces between words with a single space
             "<p> <strong>" // Add a space between <p> and <strong>
-        ];        
+        ];     
 
         rgxArray.forEach((regex, i) => {
             if (i === 3 || i === 9) {

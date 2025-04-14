@@ -118,29 +118,99 @@ function processHtml(html) {
 }
 
 // Add IDs to <h2> tags and update navigation links
-function addH2Ids(output) {
-    const h2Tags = output.match(/<h2>.+<\/h2>/g) || [];
-    const ids = h2Tags.map((tag) => {
-        const id = tag.match(/(?!<h2>)([a-zA-ZÀÂÉÊÈËÌÏÎÔÙÛÇÆŒàâéêèëìïîôùûçæœ]+)(?=<\/h2>)/g)?.[0];
-        const updatedTag = tag.replace(/<h2>(.+)<\/h2>/, `<h2 id="${id}">$1</h2>`);
-        output = output.replace(tag, updatedTag);
-        return id;
+// Process and clean up the converted HTML content
+function processHtml(html) {
+    let output = html.replace(/\s+/g, ' ').trim();
+
+    const rgxArray = [
+        /.+?(?=<h1>)/g,
+        /(?!(<\/[a-z0-9]+>))(<)/g,
+        /(\sid=".*")/g,
+        /<([a-z0-9]+)>(\n+|)<\/\1>/gm,
+        /<table(.*?)>/gm,
+        /(?<=<table(.*?)>\n*?)(<tr>)/gm,
+        /<strong>(\s)?<\/strong>/g,
+        /<p>(\s)?<\/p>/g,
+        /<br(\s)?\/>/g,
+        /(<h2> )/g,
+        /(\W<\/h2>)/g,
+        /(>)\n+(?=\w)/gm,
+        /<em> <\/em>/g,
+        /(?<=<)\s+|\s+(?=>)/g,
+        /\s<strong>/g,
+        /\s<sup>/g,
+        /\s(?=<a(.*?)\n*?)>/g,
+        /<p>\s/g,
+    ];
+
+    const rgxReplaceArray = [
+        "",
+        "\n<",
+        "",
+        "",
+        '<table class="table table-bordered" style="table-layout: fixed;">',
+        '<tr class="active">',
+        "",
+        "",
+        "",
+        "<h2>",
+        "</h2>",
+        ">",
+        "",
+        "",
+        "<strong>",
+        "<sup>",
+        "",
+        "<p>",
+    ];
+
+    rgxArray.forEach((regex, i) => {
+        output = output.replaceAll(regex, rgxReplaceArray[i]);
     });
 
+    // Add IDs to <h2> tags and update navigation links
+    output = addH2Ids(output);
+
+    // Replace acronyms with their corresponding tags
+    $.each(json_data, (i, e) => {
+        const tag = JSON.stringify(e.tag).slice(1, -1).replaceAll("'", '"');
+        const acronym = new RegExp(e.accronym, "g");
+        output = output.replaceAll(acronym, tag);
+    });
+
+    return output;
+}
+
+function addH2Ids(output) {
+    const h2Tags = output.match(/<h2>.+<\/h2>/g) || [];
+    const ids = [];
+
+    // Generate updated tags with IDs
+    const updatedOutput = h2Tags.reduce((acc, tag) => {
+        const id = tag.match(/(?!<h2>)([a-zA-ZÀÂÉÊÈËÌÏÎÔÙÛÇÆŒàâéêèëìïîôùûçæœ]+)(?=<\/h2>)/g)?.[0];
+        if (id) {
+            ids.push(id);
+            const updatedTag = tag.replace(/<h2>(.+)<\/h2>/, `<h2 id="${id}">$1</h2>`);
+            return acc.replace(tag, updatedTag);
+        }
+        return acc;
+    }, output);
+
+    // Handle "page" ID logic
     if (ids[0] === "page") {
         ids.shift();
         const groupOnThisPage = /((id="page")(.|\n)+?<ul>)(.|\n)+?(<\/ul>+?)/gm;
         const liOnThisPage = /<li>(.)+<\/li>/g;
         const posLookBehind = /(?<=<li>)(.)+(?=<\/li>)/g;
-        const group = output.match(groupOnThisPage)?.[0];
+        const group = updatedOutput.match(groupOnThisPage)?.[0];
         const allLI = group?.match(liOnThisPage) || [];
         allLI.forEach((element, i) => {
             const content = element.match(posLookBehind)?.[0];
-            output = output.replace(element, `<li><a href="#${ids[i]}">${content}</a></li>`);
+            output = updatedOutput.replace(element, `<li><a href="#${ids[i]}">${content}</a></li>`);
         });
     }
 
-    return output;
+    return updatedOutput;
 }
 
 // Copy the HTML content to the clipboard
@@ -166,3 +236,7 @@ function saveImage(base64Data, imageName) {
     link.download = imageName;
     link.click();
 }
+
+console.log("H2 Tags:", h2Tags);
+console.log("Generated IDs:", ids);
+console.log("Updated Output:", updatedOutput);

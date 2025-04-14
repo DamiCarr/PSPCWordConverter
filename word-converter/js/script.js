@@ -33,13 +33,13 @@ function handleFileSelect(event) {
                 convertImage: mammoth.images.imgElement((image) => {
                     return image.read("base64").then((imageBuffer) => {
                         const imageName = `image-${Date.now()}.png`;
-                        saveImage(imageBuffer, imageName); // Save the image
-                        convertImage: mammoth.images.imgElement(function(image) {
-                            return image.read("base64").then(function(imageBuffer) {
-                                return {
-                                    src: "data:" + image.contentType + ";base64," + imageBuffer
-                                };
-                        // Reference the image in HTML
+                        saveImage(imageBuffer, imageName); // Save the image locally
+        
+                        // Return both the saved image reference and the base64-encoded image
+                        return {
+                            src: `images/${imageName}`, // Reference the saved image in HTML
+                            data: "data:" + image.contentType + ";base64," + imageBuffer // Base64-encoded image
+                        };
                     });
                 }),
             }

@@ -147,12 +147,52 @@ $('#copy-txt')[0].onclick = () => {
     alert("copied text to clipboard");
 };
 
-// Add functionality to download the HTML content as a .html file
-$('#download-html')[0].onclick = () => {
-    const htmlContent = $('#html-data')[0].value;
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'exported-file.html';
+document.getElementById("document").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        const arrayBuffer = e.target.result;
+
+        // Use Mammoth.js to convert the document to HTML
+        const result = await mammoth.convertToHtml(
+            { arrayBuffer: arrayBuffer },
+            {
+                convertImage: mammoth.images.imgElement((image) => {
+                    return image.read("base64").then((imageBuffer) => {
+                        const imageName = `image-${Date.now()}.png`;
+                        saveImage(imageBuffer, imageName); // Save the image
+                        return { src: `images/${imageName}` }; // Reference the image in HTML
+                    });
+                }),
+            }
+        );
+
+        // Display the HTML in the textarea
+        document.getElementById("html-data").value = result.value;
+
+        // Render the HTML in the preview section
+        document.getElementById("output").innerHTML = result.value;
+    };
+
+    reader.readAsArrayBuffer(file);
+});
+
+// Function to save the image (Base64 to file)
+function saveImage(base64Data, imageName) {
+    const link = document.createElement("a");
+    link.href = `data:image/png;base64,${base64Data}`;
+    link.download = imageName;
     link.click();
-};
+}
+
+// Download the HTML content
+document.getElementById("download-html").addEventListener("click", () => {
+    const htmlContent = document.getElementById("html-data").value;
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "converted.html";
+    link.click();
+});

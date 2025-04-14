@@ -101,18 +101,20 @@ function processHtml(html) {
     ];
 
     rgxArray.forEach((regex, i) => {
-        output = output.replaceAll(regex, rgxReplaceArray[i]);
+        output = output.replace(regex, rgxReplaceArray[i]);
     });
 
     // Add IDs to <h2> tags and update navigation links
     output = addH2Ids(output);
 
     // Replace acronyms with their corresponding tags
-    $.each(json_data, (i, e) => {
-        const tag = JSON.stringify(e.tag).slice(1, -1).replaceAll("'", '"');
-        const acronym = new RegExp(e.accronym, "g");
-        output = output.replaceAll(acronym, tag);
-    });
+    if (json_data) {
+        $.each(json_data, (i, e) => {
+            const tag = JSON.stringify(e.tag).slice(1, -1).replaceAll("'", '"');
+            const acronym = new RegExp(e.accronym, "g");
+            output = output.replace(acronym, tag);
+        });
+    }
 
     return output;
 }

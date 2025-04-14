@@ -8,7 +8,16 @@ $(document).ready(() => {
     });
 
     // Add event listener to handle file input changes
-    document.getElementById("document").addEventListener("change", handleFileSelect);
+    const documentInput = document.getElementById("document");
+    if (documentInput) {
+        documentInput.addEventListener("change", (event) => {
+            documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
+            handleFileSelect(event);
+            setTimeout(() => {
+                documentInput.disabled = false; // Re-enable after processing
+            }, 1000); // Adjust timeout as needed
+        });
+    }
 
     // Add event listener to download HTML content
     document.getElementById("download-html").addEventListener("click", downloadHtml);
@@ -34,7 +43,7 @@ function handleFileSelect(event) {
                     return image.read("base64").then((imageBuffer) => {
                         const imageName = `image-${Date.now()}.png`;
                         saveImage(imageBuffer, imageName); // Save the image locally
-        
+
                         // Return both the saved image reference and the base64-encoded image
                         return {
                             src: `images/${imageName}`, // Reference the saved image in HTML
@@ -45,10 +54,18 @@ function handleFileSelect(event) {
             }
         );
 
+        // Ensure processHtml is called only once and safely
+        let processedOutput;
+        try {
+            processedOutput = processHtml(result.value);
+        } catch (error) {
+            console.error("Error processing HTML:", error);
+            processedOutput = result.value; // Fallback to unprocessed HTML
+        }
+
         // Display the HTML in the textarea and preview section
-        const output = processHtml(result.value);
-        document.getElementById("html-data").value = output;
-        document.getElementById("output").innerHTML = output;
+        document.getElementById("html-data").value = processedOutput;
+        document.getElementById("output").innerHTML = processedOutput;
     };
 
     reader.readAsArrayBuffer(file);
@@ -103,6 +120,13 @@ function processHtml(html) {
     rgxArray.forEach((regex, i) => {
         output = output.replace(regex, rgxReplaceArray[i]);
     });
+
+    // Ensure no unintended recursion occurs by processing each regex independently
+    for (let i = 0; i < rgxArray.length; i++) {
+        const regex = rgxArray[i];
+        const replacement = rgxReplaceArray[i];
+        output = output.replace(regex, replacement);
+    }
 
     // Add IDs to <h2> tags and update navigation links
     output = addH2Ids(output);

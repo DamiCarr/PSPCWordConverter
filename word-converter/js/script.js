@@ -157,7 +157,7 @@ function downloadHtml() {
 // Save the image (Base64 to file)
 function saveImage(base64Data, imageName) {
     const link = document.createElement("a");
-    link.href = `data:image/png;base64,${base64Data}`;
+    link.href = `${base64Data}`;
     link.download = imageName;
     link.click();
 }

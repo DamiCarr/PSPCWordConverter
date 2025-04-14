@@ -1,4 +1,6 @@
+// Wait for the DOM to be fully loaded
 $(document).ready(() => {
+    // Load JSON data for acronyms and handle errors
     $.getJSON("json/abbr.json", (data) => {
         json_data = data;
     }).fail(() => {
@@ -7,8 +9,10 @@ $(document).ready(() => {
 });
 
 (function () {
+    // Add event listener to handle file input changes
     document.getElementById("document").addEventListener("change", handleFileSelect, false);
 
+    // Handle file selection and convert the file to HTML using Mammoth.js
     function handleFileSelect(event) {
         readFileInputEventAsArrayBuffer(event, (arrayBuffer) => {
             mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
@@ -17,32 +21,33 @@ $(document).ready(() => {
         });
     }
 
+    // Process and display the converted HTML content
     function displayResult(result) {
         let output = result.value;
 
-        // Consolidated whitespace removal
+        // Remove extra whitespace and trim the output
         output = output.replace(/\s+/g, ' ').trim();
 
-        // Regex and replacements
+        // Define regex patterns and their replacements
         const rgxArray = [
-            /.+?(?=<h1>)/g, // Matches everything before the first <h1> tag (non-greedy).
-            /(?!(<\/[a-z0-9]+>))(<)/g, // Matches opening angle brackets (<) that are not part of a closing tag.
-            /(\sid=".*")/g, // Matches the id attribute (e.g., id="...") in HTML tags.
-            /<([a-z0-9]+)>(\n+|)<\/\1>/gm, // Matches empty HTML tags (e.g., <tag></tag>) with optional newlines inside.
-            /<table(.*?)>/gm, // Matches <table> tags with any attributes inside.
-            /(?<=<table(.*?)>\n*?)(<tr>)/gm, // Matches <tr> tags that immediately follow a <table> tag.
-            /<strong>(\s)?<\/strong>/g, // Matches empty <strong> tags (e.g., <strong></strong>) with optional whitespace inside.
-            /<p>(\s)?<\/p>/g, // Matches empty <p> tags (e.g., <p></p>) with optional whitespace inside.
-            /<br(\s)?\/>/g, // Matches <br> tags with optional whitespace before the closing slash.
-            /(<h2> )/g, // Matches <h2> tags with a space after the opening tag.
-            /(\W<\/h2>)/g, // Matches non-word characters before a closing </h2> tag.
-            /(>)\n+(?=\w)/gm, // Matches newlines after a closing tag (>) and before a word character.
-            /<em> <\/em>/g, // Matches empty <em> tags (e.g., <em></em>) with a space inside.
+            /.+?(?=<h1>)/g, // Remove everything before the first <h1> tag
+            /(?!(<\/[a-z0-9]+>))(<)/g, // Add a newline before opening angle brackets not part of a closing tag
+            /(\sid=".*")/g, // Remove id attributes from HTML tags
+            /<([a-z0-9]+)>(\n+|)<\/\1>/gm, // Remove empty HTML tags
+            /<table(.*?)>/gm, // Replace <table> tags with styled table attributes
+            /(?<=<table(.*?)>\n*?)(<tr>)/gm, // Add a class "active" to <tr> tags immediately following a <table> tag
+            /<strong>(\s)?<\/strong>/g, // Remove empty <strong> tags
+            /<p>(\s)?<\/p>/g, // Remove empty <p> tags
+            /<br(\s)?\/>/g, // Remove <br> tags
+            /(<h2> )/g, // Remove spaces after opening <h2> tags
+            /(\W<\/h2>)/g, // Remove non-word characters before closing </h2> tags
+            /(>)\n+(?=\w)/gm, // Remove newlines after closing tags and before word characters
+            /<em> <\/em>/g, // Remove empty <em> tags
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
-            /\s<strong>/g, // Match <p><strong> with space
-            /\s<sup>/g, // Match <sup> with space
-            /\s(?=<a(.*?)\n*?)>/g, // Match <a> with space
-            /<p>\s/g, // Match <p> with space
+            /\s<strong>/g, // Remove a space between <p> and <strong>
+            /\s<sup>/g, // Remove a space in front of <sup>
+            /\s(?=<a(.*?)\n*?)>/g, // Remove a space in front of <a>
+            /<p>\s/g, // Remove a space in front of <p>
         ];
         
         const rgxReplaceArray = [
@@ -66,10 +71,11 @@ $(document).ready(() => {
             "<p>", // Remove a space in front of <p>
         ];   
 
+        // Apply regex replacements iteratively
         rgxArray.forEach((regex, i) => {
-            if (i === 3 || i === 9) {
+            if (i === 3 || i === 9) { // Special handling for specific patterns
                 let e = 0;
-                const limit = i === 3 ? 6 : 3;
+                const limit = i === 3 ? 6 : 3; // Limit iterations for these patterns
                 while (e < limit) {
                     output = output.replaceAll(regex, rgxReplaceArray[i]);
                     e++;
@@ -78,7 +84,7 @@ $(document).ready(() => {
             output = output.replaceAll(regex, rgxReplaceArray[i]);
         });
 
-        // Apply H2 IDs
+        // Add IDs to <h2> tags and update navigation links
         $("#h2button").click(() => {
             function H2sRegex() {
                 let IDs = [];
@@ -89,6 +95,7 @@ $(document).ready(() => {
                     output = output.replace(element, `<h2 id="${elementID[0]}">${negLook[0]}`);
                 });
 
+                // Update navigation links if the first ID is "page"
                 if (IDs[0] === 'page') {
                     IDs.shift();
                     const groupOnThisPage = /((id="page")(.|\n)+?<ul>)(.|\n)+?(<\/ul>+?)/gm;
@@ -105,17 +112,19 @@ $(document).ready(() => {
             H2sRegex();
         });
 
-        // Apply acronyms
+        // Replace acronyms with their corresponding tags
         $.each(json_data, (i, e) => {
             let tag = JSON.stringify(e.tag).slice(1, -1).replaceAll("'", '"');
             let accronym = RegExp(e.accronym, "g");
             output = output.replaceAll(accronym, tag);
         });
 
+        // Update the output HTML and textarea
         document.getElementById("output").innerHTML = output;
         $("#html-data").val(output);
     }
 
+    // Read the selected file as an ArrayBuffer
     function readFileInputEventAsArrayBuffer(event, callback) {
         const file = event.target.files[0];
         const reader = new FileReader();
@@ -123,6 +132,7 @@ $(document).ready(() => {
         reader.readAsArrayBuffer(file);
     }
 
+    // Escape HTML characters to prevent XSS
     function escapeHtml(value) {
         return value.replace(/&/g, '&amp;')
             .replace(/"/g, '&quot;')
@@ -131,6 +141,7 @@ $(document).ready(() => {
     }
 })();
 
+// Copy the HTML content to the clipboard
 $('#copy-txt')[0].onclick = () => {
     navigator.clipboard.writeText($('#html-data')[0].value);
     alert("copied text to clipboard");

@@ -63,8 +63,11 @@ function handleFileSelect(event) {
             processedOutput = result.value; // Fallback to unprocessed HTML
         }
 
+        // Remove 'data' attributes for the textarea content
+        const htmlDataOutput = processedOutput.replace(/ data="[^"]*"/g, "");
+
         // Display the HTML in the textarea
-        document.getElementById("html-data").value = processedOutput;
+        document.getElementById("html-data").value = htmlDataOutput;
 
         // Flip 'data' and 'src' attributes for the preview section
         const previewOutput = processedOutput.replace(/<img[^>]*>/g, (imgTag) => {

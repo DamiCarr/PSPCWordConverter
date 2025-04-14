@@ -146,3 +146,13 @@ $('#copy-txt')[0].onclick = () => {
     navigator.clipboard.writeText($('#html-data')[0].value);
     alert("copied text to clipboard");
 };
+
+// Add functionality to download the HTML content as a .html file
+$('#download-html')[0].onclick = () => {
+    const htmlContent = $('#html-data')[0].value;
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'exported-file.html';
+    link.click();
+};

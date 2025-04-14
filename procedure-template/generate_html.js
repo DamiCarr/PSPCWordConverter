@@ -6,13 +6,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/generate-html', (req, res) => {
-    const { content, title, topics, description, language, nameFile, keywords } = req.body;
+// Function to generate HTML
+function generateHTML({ content, title, topics, description, language, nameFile, keywords }) {
     const currentDate = new Date().toISOString().split('T')[0];
 
     if (!content || !title || !language || !nameFile) {
-        console.error("Missing required fields in POST request");
-        return res.status(400).send("Error: Missing required fields!");
+        throw new Error("Missing required fields!");
     }
 
     let htmlTemplate = '';
@@ -107,25 +106,21 @@ app.post('/generate-html', (req, res) => {
     }
 
     const filePath = path.join(__dirname, `${nameFile}.html`);
-    fs.writeFile(filePath, htmlTemplate, (err) => {
-        if (err) {
-            console.error("Error writing file:", err);
-            return res.status(500).send("Error generating HTML file!");
-        }
+    fs.writeFileSync(filePath, htmlTemplate);
+    return filePath;
+}
 
-        res.download(filePath, `${nameFile}.html`, (err) => {
-            if (err) {
-                console.error("Error sending file:", err);
-            }
-            fs.unlink(filePath, (unlinkErr) => {
-                if (unlinkErr) {
-                    console.error("Error deleting file:", unlinkErr);
-                }
-            });
-        });
-    });
+// API Endpoint
+app.post('/generate-html', (req, res) => {
+    try {
+        const filePath = generateHTML(req.body);
+        res.status(200).send(`HTML file generated: ${filePath}`);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
 });
 
+// Start the server
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

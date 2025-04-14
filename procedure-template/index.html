@@ -107,7 +107,22 @@
             };
             reader.readAsArrayBuffer(file);
 			
-        }
+        };
+        document.getElementById('htmlForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            const response = await fetch('http://localhost:3000/generate-html', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.text();
+            alert(result);
+        });
     </script>
 <!--#include virtual="/site/wet4.0/html5/includes/pied_site-site_footer-eng.html" --> 
 <!--#set var="piwikSiteId" value="308" --> 

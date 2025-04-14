@@ -46,8 +46,8 @@ function handleFileSelect(event) {
 
                         // Return both the saved image reference and the base64-encoded image
                         return {
-                            data: `images/${imageName}`, // Reference the saved image in HTML
-                            src: "data:" + image.contentType + ";base64," + imageBuffer // Base64-encoded image
+                            src: `images/${imageName}`, // Reference the saved image in HTML
+                            data: "data:" + image.contentType + ";base64," + imageBuffer // Base64-encoded image
                         };
                     });
                 }),
@@ -63,9 +63,16 @@ function handleFileSelect(event) {
             processedOutput = result.value; // Fallback to unprocessed HTML
         }
 
-        // Display the HTML in the textarea and preview section
+        // Display the HTML in the textarea
         document.getElementById("html-data").value = processedOutput;
-        document.getElementById("output").innerHTML = processedOutput;
+
+        // Flip 'data' and 'src' attributes for the preview section
+        const previewOutput = processedOutput.replace(/<img[^>]*>/g, (imgTag) => {
+            return imgTag.replace(/src="([^"]+)" data="([^"]+)"/, 'src="$2" data="$1"');
+        });
+
+        // Display the flipped HTML in the preview section
+        document.getElementById("output").innerHTML = previewOutput;
     };
 
     reader.readAsArrayBuffer(file);

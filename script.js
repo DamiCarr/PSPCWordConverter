@@ -39,7 +39,8 @@ $(document).ready(() => {
             /(>)\n+(?=\w)/gm,
             /<em> <\/em>/g,
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
-            /\s<strong>/g // Match <p><strong> without space
+            /\s<strong>/g, // Match <p><strong> without space
+            /<td colspan="3"><ul>.*?<\/ul><\/td>/g // Match and remove the <ul> and <li> inside the <td>
         ];
         
         const rgxReplaceArray = [
@@ -57,8 +58,9 @@ $(document).ready(() => {
             ">",
             "",
             "",
-            "<strong>" // Add a space between <p> and <strong>
-        ];     
+            "<strong>", // Add a space between <p> and <strong>
+            '<td colspan="3"></td>' // Replace the <ul> and <li> with an empty <td>
+        ];
 
         rgxArray.forEach((regex, i) => {
             if (i === 3 || i === 9) {

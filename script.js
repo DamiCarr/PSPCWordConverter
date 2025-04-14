@@ -39,7 +39,6 @@ $(document).ready(() => {
             /(>)\n+(?=\w)/gm,
             /<em> <\/em>/g,
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
-            /(?<=\S)\s{2,}(?=\S)/g, // Replace multiple spaces between words with a single space
             /<p><strong>/g // Match <p><strong> without space
         ];
         
@@ -58,7 +57,6 @@ $(document).ready(() => {
             ">",
             "",
             "",
-            " ", // Replace multiple spaces between words with a single space
             "<p> <strong>" // Add a space between <p> and <strong>
         ];     
 

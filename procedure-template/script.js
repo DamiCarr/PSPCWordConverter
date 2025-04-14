@@ -325,63 +325,51 @@ function transformer() {
 
                 // Add the new details element to the parentDetails (initially document)
                 if (parentDetails) {
-                    parentDetails.appendChild(details);  // If inside another details, append here
+                    parentDetails.appendChild(details); // If inside another details, append here
                 } else {
-                    element.parentNode.insertBefore(details, element);  // Insert <details> before the _expand_ element
+                    element.parentNode.insertBefore(details, element); // Insert <details> before the _expand_ element
                 }
                 console.log("Created new <details> and inserted before _expand_");
 
                 // Remove the <h3> after adding it to <summary>
                 nextElement.remove();
-                console.log("Removed <h3>:", nextElement);
+                console.log("Removed heading:", nextElement);
 
                 // Move the next siblings (paragraphs) into the <details> block
                 let currentElement = element.nextElementSibling;
 
-                // Continue moving elements until _collapse_ is found
+                // Track visited elements to prevent infinite loops
+                const visitedElements = new Set();
+
                 while (currentElement && !currentElement.textContent.includes('_collapse_')) {
+                    if (visitedElements.has(currentElement)) {
+                        console.warn("Detected a loop, stopping recursion.");
+                        break;
+                    }
+                    visitedElements.add(currentElement);
+
                     console.log("Next element:", currentElement);
 
                     if (currentElement.tagName.toLowerCase() === 'p' && currentElement.textContent.includes('_expand_')) {
                         // Found a new _expand_ tag, handle it recursively
                         console.log("Found nested <p>_expand_, handling recursively");
-                        processExpand(currentElement, details);  // Recursively process this _expand_ tag inside the current details
-                    }
-                    console.log(currentElement);
-                    console.log(currentElement.previousElementSibling);
-                    console.log(currentElement.nextElementSibling);
-                    
-                    // Only clone and append elements that are not already removed
-                    if (currentElement && !currentElement.textContent.includes('_expand_')) {
+                        processExpand(currentElement, details); // Recursively process this _expand_ tag inside the current details
+                    } else {
+                        // Only clone and append elements that are not already removed
                         const clone = currentElement.cloneNode(true);
                         details.appendChild(clone);
                         console.log("Cloned and appended element:", currentElement);
-                    } 
-                    let nextSibling = currentElement.nextElementSibling;
-                    if (!nextSibling) {
-                        nextSibling = element.nextElementSibling;
-                        console.log(details);
-                        console.log(element);
-                        console.log("FIXED CURRENT ELEMENT");
                     }
-                    currentElement.remove();
+
+                    let nextSibling = currentElement.nextElementSibling;
+                    currentElement.remove(); // Remove the processed element
                     currentElement = nextSibling; // Update to the next sibling element
                 }
 
                 // If we encounter a _collapse_ tag, remove it
-                if (currentElement) {
-                    if (currentElement.textContent.includes('_collapse_')) {
-                        console.log("Removing _collapse_ element");
-                        currentElement.remove();
-                    } else {
-                        console.log("NEXT ELEMENT IS A COLLAPSE");
-                    }
-                } else {
-                    console.log(details);
-                    console.log("NO NEXT ELEMENT");
-                    console.log(element);
-                    
-                    console.log(currentElement);
+                if (currentElement && currentElement.textContent.includes('_collapse_')) {
+                    console.log("Removing _collapse_ element");
+                    currentElement.remove();
                 }
 
                 // Now remove the original _expand_ element (as it's processed)

@@ -117,70 +117,6 @@ function processHtml(html) {
     return output;
 }
 
-// Add IDs to <h2> tags and update navigation links
-// Process and clean up the converted HTML content
-function processHtml(html) {
-    let output = html.replace(/\s+/g, ' ').trim();
-
-    const rgxArray = [
-        /.+?(?=<h1>)/g,
-        /(?!(<\/[a-z0-9]+>))(<)/g,
-        /(\sid=".*")/g,
-        /<([a-z0-9]+)>(\n+|)<\/\1>/gm,
-        /<table(.*?)>/gm,
-        /(?<=<table(.*?)>\n*?)(<tr>)/gm,
-        /<strong>(\s)?<\/strong>/g,
-        /<p>(\s)?<\/p>/g,
-        /<br(\s)?\/>/g,
-        /(<h2> )/g,
-        /(\W<\/h2>)/g,
-        /(>)\n+(?=\w)/gm,
-        /<em> <\/em>/g,
-        /(?<=<)\s+|\s+(?=>)/g,
-        /\s<strong>/g,
-        /\s<sup>/g,
-        /\s(?=<a(.*?)\n*?)>/g,
-        /<p>\s/g,
-    ];
-
-    const rgxReplaceArray = [
-        "",
-        "\n<",
-        "",
-        "",
-        '<table class="table table-bordered" style="table-layout: fixed;">',
-        '<tr class="active">',
-        "",
-        "",
-        "",
-        "<h2>",
-        "</h2>",
-        ">",
-        "",
-        "",
-        "<strong>",
-        "<sup>",
-        "",
-        "<p>",
-    ];
-
-    rgxArray.forEach((regex, i) => {
-        output = output.replaceAll(regex, rgxReplaceArray[i]);
-    });
-
-    // Add IDs to <h2> tags and update navigation links
-    output = addH2Ids(output);
-
-    // Replace acronyms with their corresponding tags
-    $.each(json_data, (i, e) => {
-        const tag = JSON.stringify(e.tag).slice(1, -1).replaceAll("'", '"');
-        const acronym = new RegExp(e.accronym, "g");
-        output = output.replaceAll(acronym, tag);
-    });
-
-    return output;
-}
-
 function addH2Ids(output) {
     const h2Tags = output.match(/<h2>.+<\/h2>/g) || [];
     const ids = [];
@@ -236,7 +172,3 @@ function saveImage(base64Data, imageName) {
     link.download = imageName;
     link.click();
 }
-
-console.log("H2 Tags:", h2Tags);
-console.log("Generated IDs:", ids);
-console.log("Updated Output:", updatedOutput);

@@ -25,44 +25,44 @@ $(document).ready(() => {
 
         // Regex and replacements
         const rgxArray = [
-            /.+?(?=<h1>)/g,
-            /(?!(<\/[a-z0-9]+>))(<)/g,
-            /(\sid=".*")/g,
-            /<([a-z0-9]+)>(\n+|)<\/\1>/gm,
-            /<table(.*?)>/gm,
-            /(?<=<table(.*?)>\n*?)(<tr>)/gm,
-            /<strong>(\s)?<\/strong>/g,
-            /<p>(\s)?<\/p>/g,
-            /<br(\s)?\/>/g,
-            /(<h2> )/g,
-            /(\W<\/h2>)/g,
-            /(>)\n+(?=\w)/gm,
-            /<em> <\/em>/g,
+            /.+?(?=<h1>)/g, // Matches everything before the first <h1> tag (non-greedy).
+            /(?!(<\/[a-z0-9]+>))(<)/g, // Matches opening angle brackets (<) that are not part of a closing tag.
+            /(\sid=".*")/g, // Matches the id attribute (e.g., id="...") in HTML tags.
+            /<([a-z0-9]+)>(\n+|)<\/\1>/gm, // Matches empty HTML tags (e.g., <tag></tag>) with optional newlines inside.
+            /<table(.*?)>/gm, // Matches <table> tags with any attributes inside.
+            /(?<=<table(.*?)>\n*?)(<tr>)/gm, // Matches <tr> tags that immediately follow a <table> tag.
+            /<strong>(\s)?<\/strong>/g, // Matches empty <strong> tags (e.g., <strong></strong>) with optional whitespace inside.
+            /<p>(\s)?<\/p>/g, // Matches empty <p> tags (e.g., <p></p>) with optional whitespace inside.
+            /<br(\s)?\/>/g, // Matches <br> tags with optional whitespace before the closing slash.
+            /(<h2> )/g, // Matches <h2> tags with a space after the opening tag.
+            /(\W<\/h2>)/g, // Matches non-word characters before a closing </h2> tag.
+            /(>)\n+(?=\w)/gm, // Matches newlines after a closing tag (>) and before a word character.
+            /<em> <\/em>/g, // Matches empty <em> tags (e.g., <em></em>) with a space inside.
             /(?<=<)\s+|\s+(?=>)/g, // Remove whitespace at the beginning and end of tags
             /\s<strong>/g, // Match <p><strong> with space
-            /\s<sup>/g, // Match 1<sup> with space
+            /\s<sup>/g, // Match <sup> with space
             /\s<a>/g, // Match <a> with space
         ];
         
         const rgxReplaceArray = [
-            "",
-            "\n<",
-            "",
-            "",
-            '<table class="table table-bordered" style="table-layout: fixed;">',
-            '<tr class="active">',
-            "",
-            "",
-            "",
-            "<h2>",
-            "</h2>",
-            ">",
-            "",
-            "",
-            "<strong>", // remove a space between <p> and <strong>
-            "<sup>", // remove a space between 1 and <sup>
-            "<a>"
-        ];     
+            "", // Remove everything before the first <h1> tag
+            "\n<", // Add a newline before opening angle brackets that are not part of a closing tag
+            "", // Remove id attributes from HTML tags
+            "", // Remove empty HTML tags (e.g., <tag></tag>)
+            '<table class="table table-bordered" style="table-layout: fixed;">', // Replace <table> tags with a styled table
+            '<tr class="active">', // Add a class "active" to <tr> tags immediately following a <table> tag
+            "", // Remove empty <strong> tags
+            "", // Remove empty <p> tags
+            "", // Remove <br> tags
+            "<h2>", // Remove spaces after opening <h2> tags
+            "</h2>", // Remove non-word characters before closing </h2> tags
+            ">", // Remove newlines after closing tags and before word characters
+            "", // Remove empty <em> tags
+            "", // Remove whitespace at the beginning and end of tags
+            "<strong>", // Remove a space between <p> and <strong>
+            "<sup>", // Remove a space in front of <sup>
+            "<a>" // Remove a space in front of <a>
+        ];   
 
         rgxArray.forEach((regex, i) => {
             if (i === 3 || i === 9) {

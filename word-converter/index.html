@@ -1,102 +1,85 @@
 <!DOCTYPE html>
 <html>
- <head>
-    <meta charset="utf-8">
-    <title>Word Converter</title>
-    <!-- External Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="../body.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="../bootstrap.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-  </head> 
-  <style>
-    .container div {
-      padding-top: 10px;
-      margin-bottom: 30px;
-    }
-    .html {
-      color: orange;
-      font-size: smaller;
-      border-left: orange solid 3px;
-    }
-    .docx {
-      color: blue;
-      font-size: smaller;
-      border-right: blue solid 3px;
-    }
-    #copy-txt {
-      margin-top: -39px;
-      float: right;
-    }
-  </style>
-  <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Converter Tools</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarColor03">
-          <ul class="navbar-nav me-auto">
-            <!-- <li class="nav-item">
-              <a class="nav-link" href="https://xml-converter.netlify.app/">docx | XML</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="https://xml-converter.netlify.app/json.html">xml | json</a>
-            </li> -->
-            <li class="nav-item">
-              <a class="nav-link active" href="https://damicarr.github.io/PSPCWordConverter/word-converter/index.html">docx | html <span class="visually-hidden">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="https://damicarr.github.io/PSPCWordConverter/procedure-template/index.html">procedure generator </a></li>
-            <!-- <li class="nav-item">
-              <a class="nav-link" href="https://damicarr.github.io/ExcelConverter/">xlsx | json</a>
-            </li> -->
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <!-- Main Content -->
-    <div class="container">
-      <h1><span class="docx">docx</span><span class="html">html</span> Converter</h1>
-      <!-- Alerts -->
-      <div class="alert alert-dismissible alert-warning">
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        <p class="mb-0">This app will not work if the document contains images.</p>
-      </div>
-      <p>This application is designed to transform Word procedures into HTML versions of themselves.<br>Every new update will require a hard refresh from the browser as the new script.js needs to be loaded.</p>
-      <!-- File Input -->
-      <input class="form-control" id="document" type="file" />
-      <button class="form-control" id="download-html">Download HTML</button>
-      <button id="download-images" style="display: none;">Download Images</button>
-      <!-- HTML Code Section -->
-      <div class="row">
-        <div class="col-12">
-          <h2>HTML code:</h2>
-          <code>
-            <textarea
-              rows="20"
-              class="form-control"
-              id="html-data"
-              name="html-data"
-              placeholder="HTML will appear here"
-            ></textarea>
-          </code>
-        </div>
-        <button type="button" id="copy-txt" class="btn btn-success">Copy All</button>
-        <!-- Preview Section -->
-        <div class="col-12">
-          <h2>Preview:</h2>
-          <hr>
-          <div id="output" class="well"></div>
-        </div>
+
+<head>
+  <meta charset="utf-8">
+  <title>Word Converter</title>
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+</head>
+<style>
+  .container div {
+    padding-top: 10px;
+    margin-bottom: 30px;
+  }
+
+  .html {
+    color: orange;
+    font-size: smaller;
+    border-left: orange solid 3px;
+  }
+
+  .docx {
+    color: blue;
+    font-size: smaller;
+    border-right: blue solid 3px;
+  }
+
+  #copy-txt {
+    margin-top: -39px;
+    float: right;
+  }
+</style>
+
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Converter Tools</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarColor03">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="https://damicarr.github.io/PSPCWordConverter/word-converter/index.html">docx | html <span class="visually-hidden">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://damicarr.github.io/PSPCWordConverter/procedure-template/index.html">procedure generator </a>
+          </li>
+        </ul>
       </div>
     </div>
-    <!-- Scripts -->
-    <script src="js/mammoth.browser.js"></script>
-    <script src="js/script.js"></script>
-  </body>
+  </nav>
+  <!-- Main Content -->
+  <div class="container">
+    <h1><span class="docx">docx</span><span class="html">html</span> Converter</h1>
+    <!-- Alerts -->
+    <div class="alert alert-warning" role="alert"> This app will not work if the document contains images. </div>
+    <p>This application is designed to transform Word procedures into HTML versions of themselves.<br>Every new update will require a hard refresh from the browser as the new script.js needs to be loaded.</p>
+    <!-- File Input -->
+    <input class="form-control mb-3" id="document" type="file" />
+    <button class="btn btn-primary mb-3" id="download-html">Download HTML</button>
+    <button id="download-images" style="display: none;" class="btn btn-secondary mb-3">Download Images</button>
+    <!-- HTML Code Section -->
+    <div class="row">
+      <div class="col-12">
+        <h2>HTML code:</h2>
+        <textarea rows="10" class="form-control mb-3" id="html-data" name="html-data" placeholder="HTML will appear here"></textarea>
+        <button type="button" id="copy-txt" class="btn btn-success">Copy All</button>
+      </div>
+      <!-- Preview Section -->
+      <div class="col-12">
+        <h2>Preview:</h2>
+        <hr>
+        <div id="output" class="well"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Scripts -->
+  <script src="js/mammoth.browser.js"></script>
+  <script src="js/script.js"></script>
+</body>
+
 </html>

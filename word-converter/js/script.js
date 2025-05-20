@@ -1,5 +1,24 @@
 // Wait for the DOM to be fully loaded
-$(document).ready(() => {
+document.addEventListener("DOMContentLoaded", () => {
+    // Select the <h1> element
+    const h1Element = document.querySelector("h1");
+
+    // Check if the <h1> element exists
+    if (h1Element) {
+        // Add the attributes
+        h1Element.setAttribute("property", "name");
+        h1Element.setAttribute("id", "wb-cont");
+    } else {
+        console.warn("No <h1> element found to add attributes.");
+    }
+});
+
+// Load JSON data for acronyms and handle errors
+$.getJSON("json/abbr.json", (data) => {
+    json_data = data;
+}).fail(() => {
+    console.log("An error has occurred.");
+});
     // Load JSON data for acronyms and handle errors
     $.getJSON("json/abbr.json", (data) => {
         json_data = data;
@@ -7,8 +26,14 @@ $(document).ready(() => {
         console.log("An error has occurred.");
     });
 
-    // Add event listener to handle file input changes
-    const documentInput = document.getElementById("document");
+    // Populate the template with the data
+    const populatedHtml = populateTemplate(template, data);
+    
+    // Inject the populated HTML into the DOM (for example, into a <div>)
+    document.body.innerHTML = populatedHtml;
+    
+    // OR: Log the populated HTML to the console
+    console.log(populatedHtml);
     if (documentInput) {
         documentInput.addEventListener("change", (event) => {
             documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
@@ -85,19 +110,69 @@ function handleFileSelect(event) {
         // Remove 'data' attributes for the textarea content
         const htmlDataOutput = processedOutput.replace(/ data="[^"]*"/g, "");
 
-        // Display the HTML in the textarea
-        document.getElementById("html-data").value = htmlDataOutput;
-
         // Flip 'data' and 'src' attributes for the preview section
         const previewOutput = processedOutput.replace(/<img[^>]*>/g, (imgTag) => {
             return imgTag.replace(/src="([^"]+)" data="([^"]+)"/, 'src="$2" data="$1"');
         });
 
-        // Display the flipped HTML in the preview section
-        document.getElementById("output").innerHTML = previewOutput;
+        // Extract the first <h1> tag for the title
+        const titleMatch = processedOutput.match(/<h1[^>]*>(.*?)<\/h1>/);
+        const title = titleMatch ? titleMatch[1] : "Default Title";
+
+        // Populate the template with dynamic content
+        const templateData = {
+            title: title,
+            description: "Generated HTML content from the uploaded file.",
+            keywords: "HTML, Mammoth.js, File Conversion",
+            date: new Date().toISOString().split('T')[0],
+            content: htmlDataOutput
+        };
+        const populatedHtml = populateTemplate(template, templateData);
+
+        // Display the populated HTML in the preview section
+        document.getElementById("output").innerHTML = populatedHtml;
+
+        // Optionally, set the textarea value to the populated HTML
+        document.getElementById("html-data").value = populatedHtml;
     };
 
     reader.readAsArrayBuffer(file);
+}
+
+// Define the HTML template as a string
+const template = `
+<!DOCTYPE html>
+<html class="no-js" lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8"/>
+    <title>*TITLE*</title>
+    <meta name="description" content="*DESCRIPTION*" />
+    <meta name="keywords" content="*KEYWORDS*" />
+    <meta name="dcterms.title" content="*TITLE*" />
+    <meta name="dcterms.issued" content="*DATE*" />
+</head>
+<body>
+    <header>
+        <h1 property="name" id="wb-cont">*TITLE*</h1>
+    </header>
+    <main>
+        *CONTENT*
+    </main>
+    <footer>
+        <p>Last updated: *DATE*</p>
+    </footer>
+</body>
+</html>
+`;
+
+// Function to populate the template with dynamic content
+function populateTemplate(template, data) {
+    return template
+        .replace(/\*TITLE\*/g, data.title || "Default Title")
+        .replace(/\*DESCRIPTION\*/g, data.description || "Default Description")
+        .replace(/\*KEYWORDS\*/g, data.keywords || "Default Keywords")
+        .replace(/\*DATE\*/g, data.date || new Date().toISOString().split('T')[0])
+        .replace(/\*CONTENT\*/g, data.content || "Default Content");
 }
 
 // Queue to store images for manual download

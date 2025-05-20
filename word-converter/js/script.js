@@ -1,97 +1,62 @@
 // Wait for the DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", () => {
-    // Select the <h1> element
-    const h1Element = document.querySelector("h1");
+    initializePage();
+    loadJsonData();
+    setupEventListeners();
+});
 
-    // Check if the <h1> element exists
+// Global variables
+let json_data = null;
+const imageDownloadQueue = [];
+
+// Initialize the page
+function initializePage() {
+    const h1Element = document.querySelector("h1");
     if (h1Element) {
-        // Add the attributes
         h1Element.setAttribute("property", "name");
         h1Element.setAttribute("id", "wb-cont");
     } else {
         console.warn("No <h1> element found to add attributes.");
     }
-});
-
-// Declare json_data variable
-let json_data;
+}
 
 // Load JSON data for acronyms and handle errors
-$.getJSON("json/abbr.json", (data) => {
-    json_data = data;
+function loadJsonData() {
+    $.getJSON("json/abbr.json", (data) => {
+        json_data = data;
+        console.log("JSON data loaded successfully.");
+    }).fail(() => {
+        console.error("Failed to load JSON data.");
+    });
+}
 
-    // Populate the template with the data
-    const populatedHtml = populateTemplate(template, data);
-
-    // Inject the populated HTML into the DOM (for example, into a <div>)
-    document.body.innerHTML = populatedHtml;
-
-    // OR: Log the populated HTML to the console
-    console.log(populatedHtml);
+// Set up event listeners
+function setupEventListeners() {
     const documentInput = document.getElementById("yourDocumentInputId");
     if (documentInput) {
-        documentInput.addEventListener("change", (event) => {
-            documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
-            resetState(); // Reset the state for a new file
-            handleFileSelect(event);
-            setTimeout(() => {
-                documentInput.disabled = false; // Re-enable after processing
-            }, 1000); // Adjust timeout as needed
-        });
+        documentInput.addEventListener("change", handleDocumentInputChange);
     }
 
-    // Add event listener to download HTML content
-    document.getElementById("download-html").addEventListener("click", downloadHtml);
+    document.getElementById("download-html")?.addEventListener("click", downloadHtml);
+    document.getElementById("download-images")?.addEventListener("click", downloadImages);
+    document.getElementById("copy-txt")?.addEventListener("click", copyToClipboard);
+}
 
-    // Add event listener to copy HTML content to clipboard
-    $('#copy-txt').on("click", copyToClipboard);
-
-    // Add event listener for the image download button
-    document.getElementById("download-images").addEventListener("click", downloadImages);
-
-    // Add event listener to download HTML content
-    document.getElementById("download-html").addEventListener("click", downloadHtml);
-
-    // Add event listener to copy HTML content to clipboard
-    $('#copy-txt').on("click", copyToClipboard);
-
-    // Add event listener for the image download button
-    document.getElementById("download-images").addEventListener("click", downloadImages);
-// Inject the populated HTML into the DOM (for example, into a <div>)
-document.body.innerHTML = populatedHtml;
-
-// OR: Log the populated HTML to the console
-console.log(populatedHtml);
-if (documentInput) {
-        documentInput.addEventListener("change", (event) => {
-            documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
-            resetState(); // Reset the state for a new file
-            handleFileSelect(event);
-            setTimeout(() => {
-                documentInput.disabled = false; // Re-enable after processing
-            }, 1000); // Adjust timeout as needed
-        });
-    }
-
-    // Add event listener to download HTML content
-    document.getElementById("download-html").addEventListener("click", downloadHtml);
-
-    // Add event listener to copy HTML content to clipboard
-    $('#copy-txt').on("click", copyToClipboard);
-
-    // Add event listener for the image download button
-    document.getElementById("download-images").addEventListener("click", downloadImages);
-});
+// Handle document input change
+function handleDocumentInputChange(event) {
+    const documentInput = event.target;
+    documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
+    resetState();
+    handleFileSelect(event);
+    setTimeout(() => {
+        documentInput.disabled = false; // Re-enable after processing
+    }, 1000);
+}
 
 // Reset the state for a new file
 function resetState() {
-    // Clear the HTML data textarea
     document.getElementById("html-data").value = "";
-
-    // Clear the preview section
     document.getElementById("output").innerHTML = "";
-
-    // Clear the image download queue
     imageDownloadQueue.length = 0;
     updateImageDownloadButton();
 }
@@ -105,90 +70,162 @@ function handleFileSelect(event) {
     reader.onload = async (e) => {
         const arrayBuffer = e.target.result;
 
-        // Use Mammoth.js to convert the document to HTML
-        const result = await mammoth.convertToHtml(
-            { arrayBuffer: arrayBuffer },
-            {
-                convertImage: mammoth.images.imgElement((image) => {
-                    return image.read("base64").then((imageBuffer) => {
-                        const imageName = `image-${Date.now()}.png`;
-
-                        // Store image data for manual download
-                        addImageToDownloadQueue(imageBuffer, imageName);
-
-                        // Reference the image in HTML without downloading
-                        return {
-                            src: `images/${imageName}`, // Reference the saved image in HTML
-                            data: "data:" + image.contentType + ";base64," + imageBuffer // Base64-encoded image
-                        };
-                    });
-                }),
-            }
-        );
-
-        // Ensure processHtml is called only once and safely
-        let processedOutput;
         try {
-            processedOutput = processHtml(result.value);
+            const result = await mammoth.convertToHtml(
+                { arrayBuffer: arrayBuffer },
+                {
+                    convertImage: mammoth.images.imgElement(processImage),
+                }
+            );
+
+            const processedOutput = processHtml(result.value);
+            const htmlDataOutput = processedOutput.replace(/ data="[^"]*"/g, "");
+            const title = extractTitle(processedOutput);
+
+            const templateData = {
+                title: title,
+                description: "Generated HTML content from the uploaded file.",
+                keywords: "HTML, Mammoth.js, File Conversion",
+                date: new Date().toISOString().split("T")[0],
+                content: htmlDataOutput,
+            };
+
+            const populatedHtml = populateTemplate(template, templateData);
+            displayPopulatedHtml(populatedHtml);
         } catch (error) {
-            console.error("Error processing HTML:", error);
-            processedOutput = result.value; // Fallback to unprocessed HTML
+            console.error("Error processing file:", error);
         }
-
-        // Remove 'data' attributes for the textarea content
-        const htmlDataOutput = processedOutput.replace(/ data="[^"]*"/g, "");
-
-        // Flip 'data' and 'src' attributes for the preview section
-        const previewOutput = processedOutput.replace(/<img[^>]*>/g, (imgTag) => {
-            return imgTag.replace(/src="([^"]+)" data="([^"]+)"/, 'src="$2" data="$1"');
-        });
-
-        // Extract the first <h1> tag for the title
-        const titleMatch = processedOutput.match(/<h1[^>]*>(.*?)<\/h1>/);
-        const title = titleMatch ? titleMatch[1] : "Default Title";
-
-        // Populate the template with dynamic content
-        const templateData = {
-            title: title,
-            description: "Generated HTML content from the uploaded file.",
-            keywords: "HTML, Mammoth.js, File Conversion",
-            date: new Date().toISOString().split('T')[0],
-            content: htmlDataOutput
-        };
-        const populatedHtml = populateTemplate(template, templateData);
-
-        // Display the populated HTML in the preview section
-        document.getElementById("output").innerHTML = populatedHtml;
-
-        // Optionally, set the textarea value to the populated HTML
-        document.getElementById("html-data").value = populatedHtml;
     };
 
     reader.readAsArrayBuffer(file);
 }
 
+// Process image for Mammoth.js
+function processImage(image) {
+    return image.read("base64").then((imageBuffer) => {
+        const imageName = `image-${Date.now()}.png`;
+        addImageToDownloadQueue(imageBuffer, imageName);
+        return {
+            src: `images/${imageName}`,
+            data: `data:${image.contentType};base64,${imageBuffer}`,
+        };
+    });
+}
+
+// Extract the first <h1> tag for the title
+function extractTitle(html) {
+    const titleMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/);
+    return titleMatch ? titleMatch[1] : "Default Title";
+}
+
+// Automatically populate and display the template
+function autoPopulateTemplate(data) {
+    const populatedHtml = populateTemplate(template, data);
+    displayPopulatedHtml(populatedHtml);
+}
+
+// Display the populated HTML
+function displayPopulatedHtml(html) {
+    document.getElementById("output").innerHTML = html;
+    document.getElementById("html-data").value = html;
+}
+
 // Define the HTML template as a string
 const template = `
 <!DOCTYPE html>
+<!--[if lt IE 9]><html class="no-js lt-ie9" lang="en" dir="ltr"><![endif]-->
+<!--[if gt IE 8]><!-->
 <html class="no-js" lang="en" dir="ltr">
 <head>
-    <meta charset="utf-8"/>
-    <title>*TITLE*</title>
-    <meta name="description" content="*DESCRIPTION*" />
-    <meta name="keywords" content="*KEYWORDS*" />
-    <meta name="dcterms.title" content="*TITLE*" />
-    <meta name="dcterms.issued" content="*DATE*" />
+  <!--#include virtual="/includes/aa/AA_header.html" -->
+  <meta charset="utf-8" />
+  <!-- Start of Title -->
+  <title> *TITLE* </title>
+  <!-- End of Title -->
+  <!-- Start of Metadata -->
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta name="description" content=" *DESCRPTION* " />
+  <meta name="dcterms.description" content="*DESCRPTION*" />
+  <meta name="dcterms.creator" content="Government of Canada, Public Services and Procurement Canada, Public Service Pay Centre" />
+  <meta name="dcterms.title" content=" *TITLE* " />
+  <meta name="dcterms.issued" title="W3CDTF" content=" *DATE* " />
+  <meta name="dcterms.modified" title="W3CDTF" content="<!--#config timefmt='%Y-%m-%d'--><!--#echo var='LAST_MODIFIED'-->" />
+  <meta name="dcterms.subject" title="gccore" content="Pension and benefits" />
+  <meta name="dcterms.language" title="ISO639-2" content="eng" />
+  <meta name="keywords" content="*KEYWORDS*" />
+  <!--#include virtual="/includes/aa/AA_metadata.html" -->
+  <!-- End of Metadata-->
+  <!--#include virtual="/site/wet4.0/html5/includes/tete-head.html" -->
+  <!-- Start of Custom CSS -->
+  <style>
+    .div-line {
+      display: block;
+      height: 1px;
+      border: 0;
+      border-top: 2px solid #3c6b69;
+      margin: .5em 0;
+      padding: 0;
+    }
+
+    .checkbox label,
+    .radio label {
+      padding-left: 15px;
+    }
+  </style>
+  <!-- End of Custom CSS-->
+  <!-- Start of no script code -->
+  <noscript>
+    <link rel="stylesheet" href="/boew-wet/wet4.0/css/noscript.min.css" />
+  </noscript>
+  <!-- End of no script code-->
+  <script>dataLayer1 = [];</script>
 </head>
-<body>
-    <header>
-        <h1 property="name" id="wb-cont">*TITLE*</h1>
-    </header>
-    <main>
-        *CONTENT*
-    </main>
-    <footer>
-        <p>Last updated: *DATE*</p>
-    </footer>
+<body vocab="http://schema.org/" typeof="WebPage">
+  <ul id="wb-tphp">
+    <li class="wb-slc"> <a class="wb-sl" href="#wb-cont">Skip to main content</a> </li>
+    <li class="wb-slc visible-sm visible-md visible-lg"> <a class="wb-sl" href="#wb-info">Skip to "About this site"</a> </li>
+  </ul>
+  <!--#include virtual="/site/wet4.0/html5/includes/banner_site-site_banner-eng.html" -->
+  <!--#include virtual="/site/wet4.0/html5/includes/nav_mega-mega_nav-eng.html" -->
+  <nav role="navigation" id="wb-bc" class="" property="breadcrumb">
+    <h2 class="wb-inv">You are here:</h2>
+    <div class="container">
+      <div class="row">
+        <ol class="breadcrumb">
+          <!-- Start of pain-bread-eng.html (main site and sub-site) / D&eacute;but de pain-bread-eng.html (site principale et sous-site) -->
+          <!--#include virtual="/site/wet4.0/html5/includes/pain-bread-eng.html" -->
+          <!-- End of pain-bread-eng.html (main site and sub-site) / Fin de pain-bread-eng.html (site principale et sous-site) -->
+          <li><a href="/remuneration-compensation/index-eng.html">Compensation</a></li>
+          <li><a href="/remuneration-compensation/comm-eng.html">Compensation community hub</a></li>
+          <li><a href="/remuneration-compensation/instructions-eng.html">Pay system instructions and documentation </a></li>
+          <li><a href="/remuneration-compensation/utiliser-use-eng.html">How to use the pay system</a></li>
+          <li><a href="/remuneration-compensation/procedures/recherche-search-eng.html">Phoenix procedures, job aids and instructions</a></li>
+        </ol>
+      </div>
+    </div>
+  </nav>
+  <main role="main" property="mainContentOfPage" class="container">
+    <!-- Start of Main Content -->
+    <h1 property="name" id="wb-cont">*HEADER*</h1> *CONTENT* <!-- End of Main Content -->
+    <div class="row pagedetails">
+      <div class="col-sm-5 col-xs-12 datemod">
+        <dl id="wb-dtmd">
+          <dt>Date modified:&#32;</dt>
+          <dd>
+            <time property="dateModified">
+              <!--#config timefmt='%Y-%m-%d'-->
+              <!--#echo var='LAST_MODIFIED'-->
+            </time>
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </main>
+  <!--#include virtual="/site/wet4.0/html5/includes/pied_site-site_footer-eng.html" -->
+  <!--#set var="piwikSiteId" value="308" -->
+  <!--#include virtual="/includes/piwik/piwik.html" -->
+  <!--#include virtual="/site/wet4.0/html5/includes/script-pied_site-site_footer.html" -->
+  <!--#include virtual="/includes/aa/AA_footer.html" -->
 </body>
 </html>
 `;
@@ -199,12 +236,9 @@ function populateTemplate(template, data) {
         .replace(/\*TITLE\*/g, data.title || "Default Title")
         .replace(/\*DESCRIPTION\*/g, data.description || "Default Description")
         .replace(/\*KEYWORDS\*/g, data.keywords || "Default Keywords")
-        .replace(/\*DATE\*/g, data.date || new Date().toISOString().split('T')[0])
+        .replace(/\*DATE\*/g, data.date || new Date().toISOString().split("T")[0])
         .replace(/\*CONTENT\*/g, data.content || "Default Content");
 }
-
-// Queue to store images for manual download
-const imageDownloadQueue = [];
 
 // Add image to the download queue
 function addImageToDownloadQueue(base64Data, imageName) {
@@ -215,10 +249,8 @@ function addImageToDownloadQueue(base64Data, imageName) {
 // Update the image download button visibility
 function updateImageDownloadButton() {
     const downloadButton = document.getElementById("download-images");
-    if (imageDownloadQueue.length > 0) {
-        downloadButton.style.display = "block";
-    } else {
-        downloadButton.style.display = "none";
+    if (downloadButton) {
+        downloadButton.style.display = imageDownloadQueue.length > 0 ? "block" : "none";
     }
 }
 
@@ -236,7 +268,7 @@ function downloadImages() {
 
 // Process and clean up the converted HTML content
 function processHtml(html) {
-    let output = html.replace(/\s+/g, ' ').trim();
+    let output = html.replace(/\s+/g, " ").trim();
 
     const rgxArray = [
         /.+?(?=<h1>)/g,
@@ -284,17 +316,8 @@ function processHtml(html) {
         output = output.replace(regex, rgxReplaceArray[i]);
     });
 
-    // Ensure no unintended recursion occurs by processing each regex independently
-    for (let i = 0; i < rgxArray.length; i++) {
-        const regex = rgxArray[i];
-        const replacement = rgxReplaceArray[i];
-        output = output.replace(regex, replacement);
-    }
-
-    // Add IDs to <h2> tags and update navigation links
     output = addH2Ids(output);
 
-    // Replace acronyms with their corresponding tags
     if (json_data) {
         $.each(json_data, (i, e) => {
             const tag = JSON.stringify(e.tag).slice(1, -1).replaceAll("'", '"');
@@ -306,11 +329,11 @@ function processHtml(html) {
     return output;
 }
 
+// Add IDs to <h2> tags
 function addH2Ids(output) {
     const h2Tags = output.match(/<h2>.+<\/h2>/g) || [];
     const ids = [];
 
-    // Generate updated tags with IDs
     const updatedOutput = h2Tags.reduce((acc, tag) => {
         const id = tag.match(/(?!<h2>)([a-zA-ZÀÂÉÊÈËÌÏÎÔÙÛÇÆŒàâéêèëìïîôùûçæœ]+)(?=<\/h2>)/g)?.[0];
         if (id) {
@@ -321,43 +344,26 @@ function addH2Ids(output) {
         return acc;
     }, output);
 
-    // Handle "page" ID logic
-    if (ids[0] === "page") {
-        ids.shift();
-        const groupOnThisPage = /((id="page")(.|\n)+?<ul>)(.|\n)+?(<\/ul>+?)/gm;
-        const liOnThisPage = /<li>(.)+<\/li>/g;
-        const posLookBehind = /(?<=<li>)(.)+(?=<\/li>)/g;
-        const group = updatedOutput.match(groupOnThisPage)?.[0];
-        const allLI = group?.match(liOnThisPage) || [];
-        allLI.forEach((element, i) => {
-            const content = element.match(posLookBehind)?.[0];
-            output = updatedOutput.replace(element, `<li><a href="#${ids[i]}">${content}</a></li>`);
-        });
-    }
-
     return updatedOutput;
 }
 
 // Copy the HTML content to the clipboard
 function copyToClipboard() {
-    navigator.clipboard.writeText($('#html-data').val());
-    alert("Copied text to clipboard");
+    const htmlData = document.getElementById("html-data")?.value;
+    if (htmlData) {
+        navigator.clipboard.writeText(htmlData);
+        alert("Copied text to clipboard");
+    }
 }
 
 // Download the HTML content
 function downloadHtml() {
-    const htmlContent = document.getElementById("html-data").value;
-    const blob = new Blob([htmlContent], { type: "text/html" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "converted.html";
-    link.click();
-}
-
-// Save the image (Base64 to file)
-function saveImage(base64Data, imageName) {
-    const link = document.createElement("a");
-    link.href = `data:image/png;base64,${base64Data}`;
-    link.download = imageName;
-    link.click();
+    const htmlContent = document.getElementById("html-data")?.value;
+    if (htmlContent) {
+        const blob = new Blob([htmlContent], { type: "text/html" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "converted.html";
+        link.click();
+    }
 }

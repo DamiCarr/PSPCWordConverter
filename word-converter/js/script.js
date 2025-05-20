@@ -13,28 +13,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Declare json_data variable
+let json_data;
+
 // Load JSON data for acronyms and handle errors
 $.getJSON("json/abbr.json", (data) => {
     json_data = data;
-}).fail(() => {
-    console.log("An error has occurred.");
-});
-    // Load JSON data for acronyms and handle errors
-    $.getJSON("json/abbr.json", (data) => {
-        json_data = data;
-    }).fail(() => {
-        console.log("An error has occurred.");
-    });
 
     // Populate the template with the data
     const populatedHtml = populateTemplate(template, data);
-    
+
     // Inject the populated HTML into the DOM (for example, into a <div>)
     document.body.innerHTML = populatedHtml;
-    
+
     // OR: Log the populated HTML to the console
     console.log(populatedHtml);
+    const documentInput = document.getElementById("yourDocumentInputId");
     if (documentInput) {
+        documentInput.addEventListener("change", (event) => {
+            documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
+            resetState(); // Reset the state for a new file
+            handleFileSelect(event);
+            setTimeout(() => {
+                documentInput.disabled = false; // Re-enable after processing
+            }, 1000); // Adjust timeout as needed
+        });
+    }
+
+    // Add event listener to download HTML content
+    document.getElementById("download-html").addEventListener("click", downloadHtml);
+
+    // Add event listener to copy HTML content to clipboard
+    $('#copy-txt').on("click", copyToClipboard);
+
+    // Add event listener for the image download button
+    document.getElementById("download-images").addEventListener("click", downloadImages);
+
+    // Add event listener to download HTML content
+    document.getElementById("download-html").addEventListener("click", downloadHtml);
+
+    // Add event listener to copy HTML content to clipboard
+    $('#copy-txt').on("click", copyToClipboard);
+
+    // Add event listener for the image download button
+    document.getElementById("download-images").addEventListener("click", downloadImages);
+// Inject the populated HTML into the DOM (for example, into a <div>)
+document.body.innerHTML = populatedHtml;
+
+// OR: Log the populated HTML to the console
+console.log(populatedHtml);
+if (documentInput) {
         documentInput.addEventListener("change", (event) => {
             documentInput.disabled = true; // Temporarily disable to prevent multiple triggers
             resetState(); // Reset the state for a new file
